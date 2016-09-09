@@ -193,7 +193,7 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 			return "", err
 		}
 
-		agents = append(agents, Agent{uuid: uuid, averageRating:averageRating, numberOfRatings:numberOfRatings})
+		agents = append(agents, Agent{Uuid: uuid, AverageRating:averageRating, NumberOfRatings:numberOfRatings})
 	}
 
 	s, e := json.Marshal(agents)
