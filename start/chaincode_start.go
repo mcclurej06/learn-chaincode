@@ -153,9 +153,9 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 }
 
 type Agent struct {
-	uuid            string        `json:"uuid"`
-	averageRating   float32        `json:"averageRating"`
-	numberOfRatings int        `json:"numberOfRatings"`
+	Uuid            string        `json:"uuid"`
+	AverageRating   float32        `json:"averageRating"`
+	NumberOfRatings int        `json:"numberOfRatings"`
 }
 
 func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
