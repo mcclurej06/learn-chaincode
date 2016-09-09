@@ -45,9 +45,10 @@ func main() {
 
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 1")
-	}
+	t.l("initing")
+	//if len(args) != 1 {
+	//	return nil, errors.New("Incorrect number of arguments. Expecting 1")
+	//}
 
 	var err error
 
@@ -176,26 +177,23 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 	agents := []Agent{}
 
 	for x := 0; x < numberOfAgents; x++ {
-
-		var agent Agent
-
-		agent.uuid, err = t.getUuid(stub, x)
+		uuid, err := t.getUuid(stub, x)
 		if err != nil {
 			t.l("error getting agent uuid")
 			return "", err
 		}
-		agent.averageRating, err = t.getAverageRating(stub, x)
+		averageRating, err := t.getAverageRating(stub, x)
 		if err != nil {
 			t.l("error getting average rating")
 			return "", err
 		}
-		agent.numberOfRatings, err = t.getNumberOfRatings(stub, x)
+		numberOfRatings, err := t.getNumberOfRatings(stub, x)
 		if err != nil {
 			t.l("error getting number of ratings")
 			return "", err
 		}
 
-		agents = append(agents, agent)
+		agents = append(agents, Agent{uuid: uuid, averageRating:averageRating, numberOfRatings:numberOfRatings})
 	}
 
 	s, e := json.Marshal(agents)
