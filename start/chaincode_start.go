@@ -55,32 +55,31 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 	if err != nil {
 		return nil, err
 	}
-	err = stub.PutState("0"+UUID, []byte("foo"))
+	err = stub.PutState("0" + UUID, []byte("foo"))
 	if err != nil {
 		return nil, err
 	}
-	err = stub.PutState("0"+TOTAL_RATING, []byte("50"))
+	err = stub.PutState("0" + TOTAL_RATING, []byte("50"))
 	if err != nil {
 		return nil, err
 	}
-	err = stub.PutState("0"+NUMBER_OF_RATINGS, []byte("100"))
-	if err != nil {
-		return nil, err
-	}
-
-	err = stub.PutState("1"+UUID, []byte("bar"))
-	if err != nil {
-		return nil, err
-	}
-	err = stub.PutState("1"+TOTAL_RATING, []byte("98"))
-	if err != nil {
-		return nil, err
-	}
-	err = stub.PutState("1"+NUMBER_OF_RATINGS, []byte("100"))
+	err = stub.PutState("0" + NUMBER_OF_RATINGS, []byte("100"))
 	if err != nil {
 		return nil, err
 	}
 
+	err = stub.PutState("1" + UUID, []byte("bar"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("1" + TOTAL_RATING, []byte("98"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("1" + NUMBER_OF_RATINGS, []byte("100"))
+	if err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }
@@ -142,19 +141,11 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	var jsonResp string
 	var err error
 
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting name of the key to query")
-	}
-
 	if function == "getAgents" {
 		jsonResp, err = t.getAgents(stub)
 		if (err != nil) {
 			return nil, err
 		}
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return []byte(jsonResp), nil
@@ -165,10 +156,6 @@ type Agent struct {
 	averageRating   float32        `json:"averageRating"`
 	numberOfRatings int        `json:"numberOfRatings"`
 }
-type Response2 struct {
-	Page   int      `json:"page"`
-	Fruits []string `json:"fruits"`
-}
 
 func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 	var numberOfAgents int
@@ -177,10 +164,12 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 
 	someBytes, err = stub.GetState(NUMBER_OF_AGENTS)
 	if err != nil {
+		t.l("error getting number of agents")
 		return "", err
 	}
 	numberOfAgents, err = strconv.Atoi(string(someBytes))
 	if err != nil {
+		t.l("error parsing number of agents " + string(someBytes))
 		return "", err
 	}
 
@@ -192,14 +181,17 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 
 		agent.uuid, err = t.getUuid(stub, x)
 		if err != nil {
+			t.l("error getting agent uuid")
 			return "", err
 		}
 		agent.averageRating, err = t.getAverageRating(stub, x)
 		if err != nil {
+			t.l("error getting average rating")
 			return "", err
 		}
 		agent.numberOfRatings, err = t.getNumberOfRatings(stub, x)
 		if err != nil {
+			t.l("error getting number of ratings")
 			return "", err
 		}
 
@@ -223,19 +215,23 @@ func (t *SimpleChaincode) getAverageRating(stub *shim.ChaincodeStub, index int) 
 
 	b, err := stub.GetState(strconv.Itoa(index) + TOTAL_RATING)
 	if err != nil {
+		t.l("error getting total rating")
 		return -1, err
 	}
 	totalRating, err = strconv.Atoi(string(b))
 	if err != nil {
+		t.l("error parsing total rating " + string(b))
 		return -1, err
 	}
 
-	b, err =stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
+	b, err = stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
 	if err != nil {
+		t.l("error getting number of ratings")
 		return -1, err
 	}
 	numberOfRatings, err = strconv.Atoi(string(b))
 	if err != nil {
+		t.l("error parsing number of ratings" + string(b))
 		return -1, err
 	}
 
@@ -245,7 +241,12 @@ func (t *SimpleChaincode) getAverageRating(stub *shim.ChaincodeStub, index int) 
 func (t *SimpleChaincode) getNumberOfRatings(stub *shim.ChaincodeStub, index int) (int, error) {
 	b, err := stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
 	if err != nil {
+		t.l("error getting number of ratings")
 		return -1, err
 	}
 	return strconv.Atoi(string(b))
+}
+
+func (t *SimpleChaincode) l(message string) {
+	fmt.Println(message)
 }
