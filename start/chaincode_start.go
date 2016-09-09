@@ -49,10 +49,38 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
-	err := stub.PutState("hello_world", []byte(args[0]))
+	var err error
+
+	err = stub.PutState(NUMBER_OF_AGENTS, []byte("2"))
 	if err != nil {
 		return nil, err
 	}
+	err = stub.PutState("0"+UUID, []byte("foo"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("0"+TOTAL_RATING, []byte("50"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("0"+NUMBER_OF_RATINGS, []byte("100"))
+	if err != nil {
+		return nil, err
+	}
+
+	err = stub.PutState("1"+UUID, []byte("bar"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("1"+TOTAL_RATING, []byte("98"))
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState("1"+NUMBER_OF_RATINGS, []byte("100"))
+	if err != nil {
+		return nil, err
+	}
+
 
 	return nil, nil
 }
