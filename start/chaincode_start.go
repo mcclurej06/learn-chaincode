@@ -202,11 +202,14 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 }
 
 func (t *SimpleChaincode) getUuid(stub *shim.ChaincodeStub, index int) (string, error) {
-	b, e := stub.GetState(strconv.Itoa(index) + UUID)
+	uuidKey := strconv.Itoa(index) + UUID
+	t.l("getting uuid from key: " + uuidKey)
+	b, e := stub.GetState(uuidKey)
 	return string(b), e
 }
 
 func (t *SimpleChaincode) getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
+	t.l("getting average rating " + strconv.Itoa(index))
 	var err error
 	var totalRating int
 	var numberOfRatings int
