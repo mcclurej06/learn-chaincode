@@ -19,9 +19,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"strconv"
 )
 
 // SimpleChaincode example simple Chaincode implementation
@@ -45,10 +43,7 @@ func main() {
 
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
-	t.l("initing")
-	//if len(args) != 1 {
-	//	return nil, errors.New("Incorrect number of arguments. Expecting 1")
-	//}
+	l("initing")
 
 	var err error
 
@@ -85,59 +80,19 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 	return nil, nil
 }
 
-// Invoke is our entry point to invoke a chaincode function
 func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 	fmt.Println("invoke is running " + function)
 
-	// Handle different functions
 	if function == "init" {
 		return t.Init(stub, "init", args)
-	} else if function == "write" {
-		return t.write(stub, args)
 	}
+
 	fmt.Println("invoke did not find func: " + function)
 
 	return nil, errors.New("Received unknown function invocation")
 }
 
-func (t *SimpleChaincode) write(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
-	var value string
-	//var numberOfAgents int
-	//var someBytes []byte
-	var err error
-	fmt.Println("running write()")
 
-	if len(args) != 2 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
-	}
-
-	//someBytes, err = stub.GetState(NUMBER_OF_AGENTS)
-	if (err != nil) {
-		return nil, err
-	}
-	//numberOfAgents,err= strconv.Atoi(string(someBytes))
-	if (err != nil) {
-		return nil, err
-	}
-
-	//for x := 0; x < numberOfAgents - 1; x++ {
-	//	if stub.GetState(x + UUID) {
-	//
-	//	}
-	//}
-
-	agentId := args[0]                            //rename for fun
-	value = args[1]
-	err = stub.PutState(agentId + TOTAL_RATING, []byte(value))
-	err = stub.PutState(agentId + TOTAL_RATING, []byte(value))
-	err = stub.PutState(agentId + NUMBER_OF_RATINGS, []byte(value))
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
-}
-
-// Query is our entry point for queries
 func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 	var jsonResp string
 	var err error
@@ -152,102 +107,4 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	return []byte(jsonResp), nil
 }
 
-type Agent struct {
-	Uuid            string        `json:"uuid"`
-	AverageRating   float32        `json:"averageRating"`
-	NumberOfRatings int        `json:"numberOfRatings"`
-}
 
-func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
-	var numberOfAgents int
-	var someBytes []byte
-	var err error
-
-	someBytes, err = stub.GetState(NUMBER_OF_AGENTS)
-	if err != nil {
-		t.l("error getting number of agents")
-		return "", err
-	}
-	numberOfAgents, err = strconv.Atoi(string(someBytes))
-	if err != nil {
-		t.l("error parsing number of agents " + string(someBytes))
-		return "", err
-	}
-
-	agents := []Agent{}
-
-	for x := 0; x < numberOfAgents; x++ {
-		uuid, err := t.getUuid(stub, x)
-		if err != nil {
-			t.l("error getting agent uuid")
-			return "", err
-		}
-		averageRating, err := t.getAverageRating(stub, x)
-		if err != nil {
-			t.l("error getting average rating")
-			return "", err
-		}
-		numberOfRatings, err := t.getNumberOfRatings(stub, x)
-		if err != nil {
-			t.l("error getting number of ratings")
-			return "", err
-		}
-
-		agents = append(agents, Agent{Uuid: uuid, AverageRating:averageRating, NumberOfRatings:numberOfRatings})
-	}
-
-	s, e := json.Marshal(agents)
-
-	return string(s), e
-}
-
-func (t *SimpleChaincode) getUuid(stub *shim.ChaincodeStub, index int) (string, error) {
-	uuidKey := strconv.Itoa(index) + UUID
-	t.l("getting uuid from key: " + uuidKey)
-	b, e := stub.GetState(uuidKey)
-	return string(b), e
-}
-
-func (t *SimpleChaincode) getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
-	t.l("getting average rating " + strconv.Itoa(index))
-	var err error
-	var totalRating int
-	var numberOfRatings int
-
-	b, err := stub.GetState(strconv.Itoa(index) + TOTAL_RATING)
-	if err != nil {
-		t.l("error getting total rating")
-		return -1, err
-	}
-	totalRating, err = strconv.Atoi(string(b))
-	if err != nil {
-		t.l("error parsing total rating " + string(b))
-		return -1, err
-	}
-
-	b, err = stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
-	if err != nil {
-		t.l("error getting number of ratings")
-		return -1, err
-	}
-	numberOfRatings, err = strconv.Atoi(string(b))
-	if err != nil {
-		t.l("error parsing number of ratings" + string(b))
-		return -1, err
-	}
-
-	return float32(totalRating) / float32(numberOfRatings), err
-}
-
-func (t *SimpleChaincode) getNumberOfRatings(stub *shim.ChaincodeStub, index int) (int, error) {
-	b, err := stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
-	if err != nil {
-		t.l("error getting number of ratings")
-		return -1, err
-	}
-	return strconv.Atoi(string(b))
-}
-
-func (t *SimpleChaincode) l(message string) {
-	fmt.Println(message)
-}
