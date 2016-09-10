@@ -97,6 +97,7 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 }
 
 func updateAgent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	l("updating agent")
 	rating, err := strconv.ParseFloat(args[1], 32)
 	if err != nil {
 		l("error parsing float")

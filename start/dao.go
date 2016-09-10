@@ -74,6 +74,7 @@ func getNumberOfAgents(stub *shim.ChaincodeStub) (int, error) {
 }
 
 func incrementNumberOfAgents(stub *shim.ChaincodeStub) (error) {
+	l("incrementing number of agents")
 	index, err := getNumberOfAgents(stub)
 	if err != nil {
 		l("error getting number of agents ")
@@ -131,6 +132,7 @@ func getAgents(stub *shim.ChaincodeStub) (string, error) {
 }
 
 func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
+	l("writing agent")
 	if agent.Index == -1 {
 		numberOfAgents, err := getNumberOfAgents(stub)
 		if err != nil {
@@ -165,6 +167,7 @@ func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
 }
 
 func getAgentInternal(stub *shim.ChaincodeStub, uuid string) (AgentInternal, error) {
+	l("getting agent internal")
 	index, err := getAgentIndex(stub, uuid)
 	if err != nil {
 		l("error getting agent index")
@@ -172,6 +175,7 @@ func getAgentInternal(stub *shim.ChaincodeStub, uuid string) (AgentInternal, err
 	}
 
 	if index != -1 {
+		l("found existing agent")
 		rating, err := getTotalRating(stub, index)
 		if err != nil {
 			l("error getting total rating")
@@ -189,6 +193,9 @@ func getAgentInternal(stub *shim.ChaincodeStub, uuid string) (AgentInternal, err
 		}
 		return createAgentInternal(uuid, index, rating, numberOfRatings, name), nil
 	}
+
+
+	l("no existing agent, creating new one")
 
 	index, err = getNumberOfAgents(stub)
 	if err != nil {
