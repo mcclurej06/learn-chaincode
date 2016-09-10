@@ -59,7 +59,7 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 		l("error writing agent")
 		return nil, err
 	}
-	err = writeAgent(stub, createAgentInternal("foo", 1, 98, 112, "jeff"))
+	err = writeAgent(stub, createAgentInternal("bar", 1, 98, 112, "jeff"))
 	if err != nil {
 		l("error writing agent")
 		return nil, err

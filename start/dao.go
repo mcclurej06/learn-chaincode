@@ -143,6 +143,7 @@ func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
 	}
 
 	err := stub.PutState(strconv.Itoa(agent.Index) + UUID, []byte(agent.Uuid))
+	l("writing uuid " + agent.Uuid + " to index " + strconv.Itoa(agent.Index))
 	if err != nil {
 		l("error putting uuid")
 		return err
@@ -193,7 +194,6 @@ func getAgentInternal(stub *shim.ChaincodeStub, uuid string) (AgentInternal, err
 		}
 		return createAgentInternal(uuid, index, rating, numberOfRatings, name), nil
 	}
-
 
 	l("no existing agent, creating new one")
 
