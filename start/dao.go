@@ -117,8 +117,12 @@ func getAgents(stub *shim.ChaincodeStub) (string, error) {
 			l("error getting number of ratings")
 			return "", err
 		}
-
-		agents = append(agents, createAgentResponse(uuid, averageRating, numberOfRatings))
+		name, err := getName(stub, x)
+		if err != nil {
+			l("error getting agent uuid")
+			return "", err
+		}
+		agents = append(agents, createAgentResponse(uuid, averageRating, numberOfRatings, name))
 	}
 
 	s, e := json.Marshal(agents)

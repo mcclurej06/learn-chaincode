@@ -21,11 +21,12 @@ type AgentInternal struct {
 	Name            string
 }
 
-func createAgentResponse(uuid string, averageRating float32, numberOfRatings int) (AgentResponse) {
+func createAgentResponse(uuid string, averageRating float32, numberOfRatings int, name string) (AgentResponse) {
 	return AgentResponse{
 		Uuid:uuid,
 		AverageRating:averageRating,
 		NumberOfRatings:numberOfRatings,
+		Name:name,
 	}
 }
 
