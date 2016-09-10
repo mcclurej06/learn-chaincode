@@ -54,7 +54,7 @@ func addPolicyEvent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 func getPolicyEvents(stub *shim.ChaincodeStub) (string, error) {
 	var err error
 
-	numberOfPolicyEvents, err := getInt(stub, NUMBER_OF_POLICY_EVENTS)
+	numberOfPolicyEvents, err := getNumberOfPolicyEvents(stub)
 	if err != nil {
 		l("error getting number of policy events")
 		return "", err
