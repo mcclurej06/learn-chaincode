@@ -61,6 +61,7 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 }
 
 func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+	fmt.Println("query is running " + function)
 	var jsonResp string
 	var err error
 
