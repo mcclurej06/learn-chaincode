@@ -22,7 +22,7 @@ func getNumberOfRatings(stub *shim.ChaincodeStub, index int) (int, error) {
 	return strconv.Atoi(string(b))
 }
 
-func (t *SimpleChaincode) getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
+func getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
 	l("getting average rating " + strconv.Itoa(index))
 	var err error
 	var totalRating int
@@ -53,7 +53,21 @@ func (t *SimpleChaincode) getAverageRating(stub *shim.ChaincodeStub, index int) 
 	return float32(totalRating) / float32(numberOfRatings), err
 }
 
-func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
+func getNumberOfAgents(stub *shim.ChaincodeStub) (int, error) {
+	someBytes, err := stub.GetState(NUMBER_OF_AGENTS)
+	if err != nil {
+		l("error getting number of agents")
+		return -1, err
+	}
+	numberOfAgents, err := strconv.Atoi(string(someBytes))
+	if err != nil {
+		l("error parsing number of agents " + string(someBytes))
+		return -1, err
+	}
+	return numberOfAgents, nil
+}
+
+func getAgents(stub *shim.ChaincodeStub) (string, error) {
 	var numberOfAgents int
 	var someBytes []byte
 	var err error
@@ -63,7 +77,7 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 		l("error getting number of agents")
 		return "", err
 	}
-	numberOfAgents, err = strconv.Atoi(string(someBytes))
+	numberOfAgents, err = getNumberOfAgents(stub)
 	if err != nil {
 		l("error parsing number of agents " + string(someBytes))
 		return "", err
@@ -77,7 +91,7 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 			l("error getting agent uuid")
 			return "", err
 		}
-		averageRating, err := t.getAverageRating(stub, x)
+		averageRating, err := getAverageRating(stub, x)
 		if err != nil {
 			l("error getting average rating")
 			return "", err
@@ -94,4 +108,34 @@ func (t *SimpleChaincode) getAgents(stub *shim.ChaincodeStub) (string, error) {
 	s, e := json.Marshal(agents)
 
 	return string(s), e
+}
+
+func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
+	if agent.Index == -1 {
+		numberOfAgents, err := getNumberOfAgents(stub)
+		if err != nil {
+			l("error getting number of agents")
+			return err
+		}
+		agent.Index = numberOfAgents
+	}
+
+	err := stub.PutState(strconv.Itoa(agent.Index) + UUID, []byte(agent.Uuid))
+	if err != nil {
+		return err
+	}
+	err = stub.PutState(strconv.Itoa(agent.Index) + TOTAL_RATING, Float32bytes(agent.TotalRating))
+	if err != nil {
+		return err
+	}
+	err = stub.PutState(strconv.Itoa(agent.Index) + NUMBER_OF_RATINGS, []byte(strconv.Itoa(agent.NumberOfRatings)))
+	if err != nil {
+		return err
+	}
+	err = stub.PutState(strconv.Itoa(agent.Index) + NAME, []byte(agent.Name))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

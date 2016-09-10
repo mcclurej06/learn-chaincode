@@ -30,6 +30,7 @@ const NUMBER_OF_AGENTS = "numberOfAgents"
 const UUID = "UUID"
 const TOTAL_RATING = "TotalRating"
 const NUMBER_OF_RATINGS = "NumberOfRatings"
+const NAME = "Name"
 
 // ============================================================================================================================
 // Main
@@ -49,31 +50,17 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 
 	err = stub.PutState(NUMBER_OF_AGENTS, []byte("2"))
 	if err != nil {
+		l("error setting number of agents")
 		return nil, err
 	}
-	err = stub.PutState("0" + UUID, []byte("foo"))
+	err = writeAgent(stub, createAgentInternal("foo", 0, 50, 100, "bob"))
 	if err != nil {
+		l("error writing agent")
 		return nil, err
 	}
-	err = stub.PutState("0" + TOTAL_RATING, []byte("50"))
+	err = writeAgent(stub, createAgentInternal("foo", 1, 98, 112, "jeff"))
 	if err != nil {
-		return nil, err
-	}
-	err = stub.PutState("0" + NUMBER_OF_RATINGS, []byte("100"))
-	if err != nil {
-		return nil, err
-	}
-
-	err = stub.PutState("1" + UUID, []byte("bar"))
-	if err != nil {
-		return nil, err
-	}
-	err = stub.PutState("1" + TOTAL_RATING, []byte("98"))
-	if err != nil {
-		return nil, err
-	}
-	err = stub.PutState("1" + NUMBER_OF_RATINGS, []byte("100"))
-	if err != nil {
+		l("error writing agent")
 		return nil, err
 	}
 
@@ -98,7 +85,7 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	var err error
 
 	if function == "getAgents" {
-		jsonResp, err = t.getAgents(stub)
+		jsonResp, err = getAgents(stub)
 		if (err != nil) {
 			return nil, err
 		}
