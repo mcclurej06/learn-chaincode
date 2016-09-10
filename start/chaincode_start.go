@@ -41,25 +41,6 @@ func main() {
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 	l("initing")
-
-	var err error
-
-	err = stub.PutState(NUMBER_OF_AGENTS, []byte("2"))
-	if err != nil {
-		l("error setting number of agents")
-		return nil, err
-	}
-	err = writeAgent(stub, createAgentInternal("foo", 0, 50, 100, "bob"))
-	if err != nil {
-		l("error writing agent")
-		return nil, err
-	}
-	err = writeAgent(stub, createAgentInternal("bar", 1, 98, 112, "jeff"))
-	if err != nil {
-		l("error writing agent")
-		return nil, err
-	}
-
 	return nil, nil
 }
 
