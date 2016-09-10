@@ -33,7 +33,7 @@ func getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
 		l("error getting total rating")
 		return -1, err
 	}
-	totalRating, err = strconv.Atoi(string(b))
+	totalRating= Float32frombytes(b)
 	if err != nil {
 		l("error parsing total rating " + string(b))
 		return -1, err
@@ -122,18 +122,22 @@ func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
 
 	err := stub.PutState(strconv.Itoa(agent.Index) + UUID, []byte(agent.Uuid))
 	if err != nil {
+		l("error putting uuid")
 		return err
 	}
 	err = stub.PutState(strconv.Itoa(agent.Index) + TOTAL_RATING, Float32bytes(agent.TotalRating))
 	if err != nil {
+		l("error putting total rating")
 		return err
 	}
 	err = stub.PutState(strconv.Itoa(agent.Index) + NUMBER_OF_RATINGS, []byte(strconv.Itoa(agent.NumberOfRatings)))
 	if err != nil {
+		l("error putting number of ratings")
 		return err
 	}
 	err = stub.PutState(strconv.Itoa(agent.Index) + NAME, []byte(agent.Name))
 	if err != nil {
+		l("error putting name")
 		return err
 	}
 
