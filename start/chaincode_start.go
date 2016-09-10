@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"strconv"
 )
 
 // SimpleChaincode example simple Chaincode implementation
@@ -72,13 +73,14 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 
 	if function == "init" {
 		return t.Init(stub, "init", args)
+	} else if function == "updateAgent" {
+		return updateAgent(stub, args)
 	}
 
 	fmt.Println("invoke did not find func: " + function)
 
 	return nil, errors.New("Received unknown function invocation")
 }
-
 
 func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 	var jsonResp string
@@ -94,4 +96,25 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	return []byte(jsonResp), nil
 }
 
+func updateAgent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	rating, err := strconv.ParseFloat(args[1], 32)
+	if err != nil {
+		l("error parsing float")
+		return nil, err
+	}
+	agentPost := createAgentPost(args[0], float32(rating), args[2])
 
+	agentInternal, err := getAgentInternal(stub, args[0])
+	if err != nil {
+		l("error getting agent internal")
+		return nil, err
+	}
+
+	agentInternal.Name = agentPost.Name
+	agentInternal.NumberOfRatings = agentInternal.NumberOfRatings + 1
+	agentInternal.TotalRating = agentInternal.TotalRating + agentPost.Rating
+
+	writeAgent(stub, agentInternal)
+
+	return nil, nil
+}

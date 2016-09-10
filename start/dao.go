@@ -13,6 +13,13 @@ func getUuid(stub *shim.ChaincodeStub, index int) (string, error) {
 	return string(b), e
 }
 
+func getName(stub *shim.ChaincodeStub, index int) (string, error) {
+	uuidKey := strconv.Itoa(index) + NAME
+	l("getting name from key: " + uuidKey)
+	b, e := stub.GetState(uuidKey)
+	return string(b), e
+}
+
 func getNumberOfRatings(stub *shim.ChaincodeStub, index int) (int, error) {
 	b, err := stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
 	if err != nil {
@@ -22,31 +29,30 @@ func getNumberOfRatings(stub *shim.ChaincodeStub, index int) (int, error) {
 	return strconv.Atoi(string(b))
 }
 
+func getTotalRating(stub *shim.ChaincodeStub, index int) (float32, error) {
+	b, err := stub.GetState(strconv.Itoa(index) + TOTAL_RATING)
+	if err != nil {
+		l("error getting total rating")
+		return -1, err
+	}
+	return Float32frombytes(b), nil
+}
+
 func getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
 	l("getting average rating " + strconv.Itoa(index))
 	var err error
 	var totalRating float32
 	var numberOfRatings int
 
-	b, err := stub.GetState(strconv.Itoa(index) + TOTAL_RATING)
+	totalRating, err = getTotalRating(stub, index)
 	if err != nil {
-		l("error getting total rating")
-		return -1, err
-	}
-	totalRating= Float32frombytes(b)
-	if err != nil {
-		l("error parsing total rating " + string(b))
+		l("error parsing total rating ")
 		return -1, err
 	}
 
-	b, err = stub.GetState(strconv.Itoa(index) + NUMBER_OF_RATINGS)
+	numberOfRatings, err = getNumberOfRatings(stub, index)
 	if err != nil {
-		l("error getting number of ratings")
-		return -1, err
-	}
-	numberOfRatings, err = strconv.Atoi(string(b))
-	if err != nil {
-		l("error parsing number of ratings" + string(b))
+		l("error parsing number of ratings")
 		return -1, err
 	}
 
@@ -65,6 +71,16 @@ func getNumberOfAgents(stub *shim.ChaincodeStub) (int, error) {
 		return -1, err
 	}
 	return numberOfAgents, nil
+}
+
+func incrementNumberOfAgents(stub *shim.ChaincodeStub) (error) {
+	index, err := getNumberOfAgents(stub)
+	if err != nil {
+		l("error getting number of agents ")
+		return err
+	}
+
+	return stub.PutState(NUMBER_OF_AGENTS, []byte(strconv.Itoa(index + 1)))
 }
 
 func getAgents(stub *shim.ChaincodeStub) (string, error) {
@@ -142,4 +158,64 @@ func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
 	}
 
 	return nil
+}
+
+func getAgentInternal(stub *shim.ChaincodeStub, uuid string) (AgentInternal, error) {
+	index, err := getAgentIndex(stub, uuid)
+	if err != nil {
+		l("error getting agent index")
+		return AgentInternal{}, err
+	}
+
+	if index != -1 {
+		rating, err := getTotalRating(stub, index)
+		if err != nil {
+			l("error getting total rating")
+			return AgentInternal{}, err
+		}
+		numberOfRatings, err := getNumberOfRatings(stub, index)
+		if err != nil {
+			l("error getting number of ratings")
+			return AgentInternal{}, err
+		}
+		name, err := getName(stub, index)
+		if err != nil {
+			l("error getting name")
+			return AgentInternal{}, err
+		}
+		return createAgentInternal(uuid, index, rating, numberOfRatings, name), nil
+	}
+
+	index, err = getNumberOfAgents(stub)
+	if err != nil {
+		l("error getting number of agents")
+		return AgentInternal{}, err
+	}
+	incrementNumberOfAgents(stub)
+	if err != nil {
+		l("error incrementing number of agents")
+		return AgentInternal{}, err
+	}
+
+	return createAgentInternal(uuid, index, 0, 0, ""), nil
+
+}
+
+func getAgentIndex(stub *shim.ChaincodeStub, uuid string) (int, error) {
+	numberOfAgents, err := getNumberOfAgents(stub)
+	if err != nil {
+		l("error getting number of agents")
+		return -1, err
+	}
+	for x := 0; x < numberOfAgents; x++ {
+		myUuid, err := getUuid(stub, x)
+		if err != nil {
+			l("error getting agent uuid")
+			return -1, err
+		}
+		if myUuid == uuid {
+			return x, nil
+		}
+	}
+	return -1, nil
 }
