@@ -122,8 +122,8 @@ func getAgentAverageRating(stub *shim.ChaincodeStub, index int) (float32, error)
 func getNumberOfAgents(stub *shim.ChaincodeStub) (int, error) {
 	numberOfAgents, err := getInt(stub, NUMBER_OF_AGENTS)
 	if err != nil {
-		l("error getting number of agents")
-		return -1, err
+		l("error getting number of agents, returning 0")
+		return 0, nil
 	}
 	return numberOfAgents, nil
 }

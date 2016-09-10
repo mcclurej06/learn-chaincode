@@ -125,8 +125,8 @@ func incrementNumberOfPolicyEvents(stub *shim.ChaincodeStub) (error) {
 func getNumberOfPolicyEvents(stub *shim.ChaincodeStub) (int, error) {
 	numberOfPolicyEvents, err := getInt(stub, NUMBER_OF_POLICY_EVENTS)
 	if err != nil {
-		l("error getting number of policy events")
-		return -1, err
+		l("error getting number of policy events, returning 0")
+		return 0, nil
 	}
 	return numberOfPolicyEvents, nil
 }
