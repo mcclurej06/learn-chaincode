@@ -28,10 +28,10 @@ type SimpleChaincode struct {
 }
 
 const NUMBER_OF_AGENTS = "numberOfAgents"
-const UUID = "UUID"
-const TOTAL_RATING = "TotalRating"
-const NUMBER_OF_RATINGS = "NumberOfRatings"
-const NAME = "Name"
+const AGENT_UUID = "AgentUUID"
+const AGENT_TOTAL_RATING = "AgentTotalRating"
+const AGENT_NUMBER_OF_RATINGS = "AgentNumberOfRatings"
+const AGENT_NAME = "AgentName"
 
 // ============================================================================================================================
 // Main
