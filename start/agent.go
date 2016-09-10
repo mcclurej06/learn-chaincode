@@ -6,6 +6,12 @@ import (
 	"encoding/json"
 )
 
+const NUMBER_OF_AGENTS = "numberOfAgents"
+const AGENT_UUID = "AgentUUID"
+const AGENT_TOTAL_RATING = "AgentTotalRating"
+const AGENT_NUMBER_OF_RATINGS = "AgentNumberOfRatings"
+const AGENT_NAME = "AgentName"
+
 type AgentResponse struct {
 	Uuid            string        `json:"uuid"`
 	AverageRating   float32        `json:"averageRating"`
@@ -135,17 +141,11 @@ func incrementNumberOfAgents(stub *shim.ChaincodeStub) (error) {
 
 func getAgents(stub *shim.ChaincodeStub) (string, error) {
 	var numberOfAgents int
-	var someBytes []byte
 	var err error
 
-	someBytes, err = stub.GetState(NUMBER_OF_AGENTS)
-	if err != nil {
-		l("error getting number of agents")
-		return "", err
-	}
 	numberOfAgents, err = getNumberOfAgents(stub)
 	if err != nil {
-		l("error parsing number of agents " + string(someBytes))
+		l("error getting number of agents " )
 		return "", err
 	}
 
@@ -191,23 +191,23 @@ func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
 		agent.Index = numberOfAgents
 	}
 
-	err := stub.PutState(strconv.Itoa(agent.Index) + AGENT_UUID, []byte(agent.Uuid))
+	err := putString(stub, strconv.Itoa(agent.Index) + AGENT_UUID, agent.Uuid)
 	l("writing uuid " + agent.Uuid + " to index " + strconv.Itoa(agent.Index))
 	if err != nil {
 		l("error putting uuid")
 		return err
 	}
-	err = stub.PutState(strconv.Itoa(agent.Index) + AGENT_TOTAL_RATING, Float32bytes(agent.TotalRating))
+	err = putFloat(stub, strconv.Itoa(agent.Index) + AGENT_TOTAL_RATING, agent.TotalRating)
 	if err != nil {
 		l("error putting total rating")
 		return err
 	}
-	err = stub.PutState(strconv.Itoa(agent.Index) + AGENT_NUMBER_OF_RATINGS, []byte(strconv.Itoa(agent.NumberOfRatings)))
+	err = putInt(stub, strconv.Itoa(agent.Index) + AGENT_NUMBER_OF_RATINGS, agent.NumberOfRatings)
 	if err != nil {
 		l("error putting number of ratings")
 		return err
 	}
-	err = stub.PutState(strconv.Itoa(agent.Index) + AGENT_NAME, []byte(agent.Name))
+	err = putString(stub, strconv.Itoa(agent.Index) + AGENT_NAME, agent.Name)
 	if err != nil {
 		l("error putting name")
 		return err
@@ -279,4 +279,28 @@ func getAgentIndex(stub *shim.ChaincodeStub, uuid string) (int, error) {
 		}
 	}
 	return -1, nil
+}
+
+func updateAgent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	l("updating agent")
+	rating, err := strconv.ParseFloat(args[1], 32)
+	if err != nil {
+		l("error parsing float")
+		return nil, err
+	}
+	agentPost := createAgentPost(args[0], float32(rating), args[2])
+
+	agentInternal, err := getAgentInternal(stub, args[0])
+	if err != nil {
+		l("error getting agent internal")
+		return nil, err
+	}
+
+	agentInternal.Name = agentPost.Name
+	agentInternal.NumberOfRatings = agentInternal.NumberOfRatings + 1
+	agentInternal.TotalRating = agentInternal.TotalRating + agentPost.Rating
+
+	writeAgent(stub, agentInternal)
+
+	return nil, nil
 }

@@ -5,6 +5,16 @@ import (
 	"strconv"
 )
 
+func putString(stub *shim.ChaincodeStub, key string, value string) error {
+	return stub.PutState(key, []byte(value))
+}
+func putFloat(stub *shim.ChaincodeStub, key string, value float32) error {
+	return stub.PutState(key, Float32bytes(value))
+}
+func putInt(stub *shim.ChaincodeStub, key string, value int) error {
+	return stub.PutState(key, []byte(strconv.Itoa(value)))
+}
+
 func getInt(stub *shim.ChaincodeStub, key string) (int, error) {
 	someBytes, err := stub.GetState(key)
 	if err != nil {

@@ -20,18 +20,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"strconv"
 )
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
-const NUMBER_OF_AGENTS = "numberOfAgents"
-const AGENT_UUID = "AgentUUID"
-const AGENT_TOTAL_RATING = "AgentTotalRating"
-const AGENT_NUMBER_OF_RATINGS = "AgentNumberOfRatings"
-const AGENT_NAME = "AgentName"
+
 
 // ============================================================================================================================
 // Main
@@ -75,6 +70,8 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 		return t.Init(stub, "init", args)
 	} else if function == "updateAgent" {
 		return updateAgent(stub, args)
+	} else if function == "addPolicyEvent" {
+		return addPolicyEvent(stub, args)
 	}
 
 	fmt.Println("invoke did not find func: " + function)
@@ -91,31 +88,13 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 		if (err != nil) {
 			return nil, err
 		}
+	} else if function == "getPolicyEvents"{
+		jsonResp, err = getPolicyEvents(stub)
+		if (err != nil) {
+			return nil, err
+		}
 	}
 
 	return []byte(jsonResp), nil
 }
 
-func updateAgent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
-	l("updating agent")
-	rating, err := strconv.ParseFloat(args[1], 32)
-	if err != nil {
-		l("error parsing float")
-		return nil, err
-	}
-	agentPost := createAgentPost(args[0], float32(rating), args[2])
-
-	agentInternal, err := getAgentInternal(stub, args[0])
-	if err != nil {
-		l("error getting agent internal")
-		return nil, err
-	}
-
-	agentInternal.Name = agentPost.Name
-	agentInternal.NumberOfRatings = agentInternal.NumberOfRatings + 1
-	agentInternal.TotalRating = agentInternal.TotalRating + agentPost.Rating
-
-	writeAgent(stub, agentInternal)
-
-	return nil, nil
-}
