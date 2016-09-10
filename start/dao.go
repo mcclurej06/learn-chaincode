@@ -164,6 +164,7 @@ func writeAgent(stub *shim.ChaincodeStub, agent AgentInternal) (error) {
 		return err
 	}
 
+	l("wrote agent, returning nil")
 	return nil
 }
 
