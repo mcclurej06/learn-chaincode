@@ -25,7 +25,7 @@ func getNumberOfRatings(stub *shim.ChaincodeStub, index int) (int, error) {
 func getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
 	l("getting average rating " + strconv.Itoa(index))
 	var err error
-	var totalRating int
+	var totalRating float32
 	var numberOfRatings int
 
 	b, err := stub.GetState(strconv.Itoa(index) + TOTAL_RATING)
@@ -50,7 +50,7 @@ func getAverageRating(stub *shim.ChaincodeStub, index int) (float32, error) {
 		return -1, err
 	}
 
-	return float32(totalRating) / float32(numberOfRatings), err
+	return totalRating / float32(numberOfRatings), err
 }
 
 func getNumberOfAgents(stub *shim.ChaincodeStub) (int, error) {
