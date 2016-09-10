@@ -10,16 +10,18 @@ type PolicyEventResponse struct {
 	AgentUuid        string        `json:"agentUuid"`
 	Event            string        `json:"event"`
 	PolicyHolderUuid string        `json:"policyHolderUuid"`
+	Timestamp        string        `json:"timestamp"`
 }
 
-func createPolicyEventResponse(agentUuid string, event string, policyHolderUuid string) PolicyEventResponse {
-	return PolicyEventResponse{AgentUuid: agentUuid, Event: event, PolicyHolderUuid: policyHolderUuid}
+func createPolicyEventResponse(agentUuid string, event string, policyHolderUuid string, timestamp string) PolicyEventResponse {
+	return PolicyEventResponse{AgentUuid: agentUuid, Event: event, PolicyHolderUuid: policyHolderUuid, Timestamp: timestamp}
 }
 
 const NUMBER_OF_POLICY_EVENTS = "numberOfPolicyEvents"
 const POLICY_EVENT_AGENT_UUID = "PolicyEventAgentUUID"
 const POLICY_EVENT = "PolicyEvent"
 const POLICY_EVENT_HOLDER_UUID = "PolicyHolderUuid"
+const POLICY_EVENT_TIMESTAMP = "PolicyEventTimestamp"
 
 func addPolicyEvent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	index, err := getNumberOfPolicyEvents(stub)
@@ -29,7 +31,7 @@ func addPolicyEvent(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	}
 	incrementNumberOfPolicyEvents(stub)
 
-	policyEvent := createPolicyEventResponse(args[0], args[1], args[2]);
+	policyEvent := createPolicyEventResponse(args[0], args[1], args[2], args[3]);
 
 	err = putString(stub, strconv.Itoa(index) + POLICY_EVENT_AGENT_UUID, policyEvent.AgentUuid);
 	if err != nil {
@@ -76,7 +78,12 @@ func getPolicyEvents(stub *shim.ChaincodeStub) (string, error) {
 			l("error getting policy event holder uuid")
 			return "", err
 		}
-		policyEvents = append(policyEvents, createPolicyEventResponse(agentUuid, event, policyHolderUuid))
+		policyHolderTimestamp, err := getPolicyEventHolderUuid(stub, x)
+		if err != nil {
+			l("error getting policy event holder uuid")
+			return "", err
+		}
+		policyEvents = append(policyEvents, createPolicyEventResponse(agentUuid, event, policyHolderUuid, policyHolderTimestamp))
 	}
 
 	s, e := json.Marshal(policyEvents)
@@ -109,6 +116,15 @@ func getPolicyEventHolderUuid(stub *shim.ChaincodeStub, index int) (string, erro
 		return "", err
 	}
 	return policyEventHolderUuid, nil
+}
+
+func getPolicyEventTimestamp(stub *shim.ChaincodeStub, index int) (string, error) {
+	policyEventTimestamp, err := getString(stub, strconv.Itoa(index) + POLICY_EVENT_TIMESTAMP)
+	if err != nil {
+		l("error getting policy event timestamp")
+		return "", err
+	}
+	return policyEventTimestamp, nil
 }
 
 func incrementNumberOfPolicyEvents(stub *shim.ChaincodeStub) (error) {
